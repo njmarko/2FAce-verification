@@ -6,6 +6,8 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -26,6 +28,16 @@ public class User implements Serializable {
 
     @Column(name = "active", nullable = false)
     private Boolean active;
+
+    @Column(name = "verified", nullable = false)
+    protected Boolean verified;
+
+    @Column(name = "logged_in", nullable = false)
+    protected Boolean loggedIn;
+
+    @ManyToMany(cascade = {})
+    @JoinTable(name = "user_authorities", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "authority_id"))
+    protected Set<Authority> authorities = new HashSet<>();
 
     @Version
     private Short version;
