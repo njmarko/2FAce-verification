@@ -2,10 +2,8 @@ package com.xor.FAce.domain.entities;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,12 +11,7 @@ import java.util.Set;
 @Table(name = "users")
 @Getter
 @Setter
-@Where(clause = "active = true")
-public class User implements Serializable {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class User extends BaseEntity {
 
     @Column(name = "username", nullable = false, unique = true)
     private String username;
@@ -26,8 +19,8 @@ public class User implements Serializable {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "active", nullable = false)
-    private Boolean active;
+    @Column(name = "email", nullable = false, unique = true)
+    protected String email;
 
     @Column(name = "verified", nullable = false)
     protected Boolean verified;
@@ -43,11 +36,16 @@ public class User implements Serializable {
     private Short version;
 
     public User() {
+        super();
     }
 
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
-        this.setActive(true);
+    protected User(String username, String password, String email, Boolean verified,
+                   Boolean loggedIn) {
+        this();
+        this.setUsername(username);
+        this.setPassword(password);
+        this.setEmail(email);
+        this.setVerified(verified);
+        this.setLoggedIn(loggedIn);
     }
 }
