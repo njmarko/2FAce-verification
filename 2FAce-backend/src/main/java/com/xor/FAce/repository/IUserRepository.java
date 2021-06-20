@@ -13,4 +13,8 @@ public interface IUserRepository extends JpaRepository<User, Long> {
 
     @Query("select u from User u join fetch u.authorities where u.username=:username and u.active=true and u.verified=true")
     Optional<User> findByUsernameFetchAuthorities(@Param("username") String username);
+
+    Optional<User> findByUsername(String username);
+
+    Optional<User> findByEmail(String email);
 }
