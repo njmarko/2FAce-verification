@@ -5,17 +5,21 @@
             <h4 class="my-0 font-weight-normal">Sign in</h4>
             </div>
             <div class="card-body">
-                <form>
+                <form @submit.prevent="login">
                     <div class="form-group row">
-                        <label for="inputEmail3" class="col-sm-2 col-form-label"><img src="assets/icons/envelope_closed-1.png" class="icon-16-4"> Email</label>
+                        <label for="inputUsername" class="col-sm-2 col-form-label"><img src="assets/icons/user_world-1.png" class="icon-16-4">Username</label>
                         <div class="col-sm-10">
-                            <input type="email" class="form-95" id="inputEmail3">
+                            <input type="text" class="form-95" id="inputUsername"
+                                v-model="payload.username"
+                            >
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="inputPassword3" class="col-sm-2 col-form-label"><img src="assets/icons/keys-0.png" class="icon-16-4"> Password</label>
                         <div class="col-sm-10">
-                            <input type="password" class="form-95" id="inputPassword3">
+                            <input type="password" class="form-95" id="inputPassword3"
+                                v-model="payload.password" 
+                            >
                         </div>
                     </div>
                     <div class="form-group row">
@@ -54,9 +58,11 @@ export default ({
 			.then((response)=>{
 				this.setUser(response.data);
 				this.$router.push({name: "Home"});
+                alert("success");
 			})
 			.catch((error)=>{
 				if(error.response){
+                    alert(error.message);
 					// makeToast(this, "Error", "Wrong username or password.", "danger");
 				}
 			});
