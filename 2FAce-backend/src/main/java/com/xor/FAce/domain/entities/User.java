@@ -40,7 +40,7 @@ public class User extends BaseEntity {
     }
 
     public User(String username, String password, String email) {
-        this(username, password, email, false, false);
+        this(username, password, email, true, true);
     }
 
     public User(String username, String password, String email, Boolean verified,

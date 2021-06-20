@@ -1,8 +1,8 @@
 package com.xor.FAce.service.impl;
 
 import com.xor.FAce.domain.entities.User;
-import com.xor.FAce.domain.exception.EmailAlreadyExistsException;
-import com.xor.FAce.domain.exception.UsernameAlreadyExistsException;
+import com.xor.FAce.domain.exceptions.EmailAlreadyExistsException;
+import com.xor.FAce.domain.exceptions.UsernameAlreadyExistsException;
 import com.xor.FAce.repository.IUserRepository;
 import com.xor.FAce.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;

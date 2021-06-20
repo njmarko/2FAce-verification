@@ -24,8 +24,7 @@ router.beforeEach((to, _from, next) => {
   const {authenticated, authorities} = to.meta;
   if(store.getters.loggedUser.jwt){
       next();
-  }
-  else{
+  } else{
     next();
   }
 
