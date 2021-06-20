@@ -39,8 +39,8 @@ public class User extends BaseEntity {
         super();
     }
 
-    protected User(String username, String password, String email, Boolean verified,
-                   Boolean loggedIn) {
+    public User(String username, String password, String email, Boolean verified,
+                Boolean loggedIn) {
         this();
         this.setUsername(username);
         this.setPassword(password);
