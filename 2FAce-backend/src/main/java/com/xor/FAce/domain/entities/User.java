@@ -28,7 +28,7 @@ public class User extends BaseEntity {
     @Column(name = "logged_in", nullable = false)
     protected Boolean loggedIn;
 
-    @ManyToMany(cascade = {})
+    @ManyToMany
     @JoinTable(name = "user_authorities", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "authority_id"))
     protected Set<Authority> authorities = new HashSet<>();
 
@@ -37,6 +37,10 @@ public class User extends BaseEntity {
 
     public User() {
         super();
+    }
+
+    public User(String username, String password, String email) {
+        this(username, password, email, false, false);
     }
 
     public User(String username, String password, String email, Boolean verified,
