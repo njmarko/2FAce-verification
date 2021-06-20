@@ -23,12 +23,7 @@ axios.interceptors.request.use(config => {
 router.beforeEach((to, _from, next) => {
   const {authenticated, authorities} = to.meta;
   if(store.getters.loggedUser.jwt){
-    if(!store.getters.loggedUser.loggedIn && !store.getters.loggedUser.authorities.includes("ROLE_PATIENT") && to.name !== "ChangePasswordView"){
-      next({name: "ChangePasswordView"});
-    }
-    else{
       next();
-    }
   }
   else{
     next();

@@ -1,6 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Home from "../views/Home.vue"
+import Login from "../components/Login.vue"
 
 Vue.use(VueRouter);
 
@@ -12,7 +13,15 @@ const routes = [
 		meta: {
 			authenticated: false,
 		}
-	}
+	},
+	{
+		path: "/login",
+		name: "Login",
+		component: Login,
+		meta: {
+			authenticated: false,
+		}
+	},
 ];
 
 const originalPush = VueRouter.prototype.push
