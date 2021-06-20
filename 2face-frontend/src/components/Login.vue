@@ -23,13 +23,40 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <div class="col-sm-10">
-                            <button type="submit" class="btn btn-primary">Sign in</button>
+                        <div class="col-sm-12">
+                            <button type="submit" class="btn btn-primary" v-b-modal.errMsgModal>Sign in</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
+
+ 
+        <b-modal id="errMsgModal" 
+            v-if="showModal"
+            hide-footer
+            title="Dial-Up Error"
+            >
+                <template #default="{ hide }">
+            <div class="row">
+                <div class="col-4">
+                    <img src="assets/icons/msg_warning-0.png" class="mx-auto d-block text-center" height="65" >
+                </div>
+                <div class="col-8">
+                    <p>Unable to sign in. Username or password is invalid. Please try again.</p>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-12 text-center">
+                    <b-button class="btn btn-primary w-25" @click="hide()">OK</b-button>
+                </div>
+            </div>
+                </template>
+        </b-modal>
+
+
+
+
     </div>
 </template>
 
@@ -46,8 +73,8 @@ export default ({
 			payload:{
 				username: "",
 				password: "",
-
-			}
+			},
+            showModal:false,
 		}
 	},
 	methods: {
@@ -62,7 +89,8 @@ export default ({
 			})
 			.catch((error)=>{
 				if(error.response){
-                    alert(error.message);
+                    this.showModal=true;
+                    // this.$refs.modal.classList.toggle("show");
 					// makeToast(this, "Error", "Wrong username or password.", "danger");
 				}
 			});

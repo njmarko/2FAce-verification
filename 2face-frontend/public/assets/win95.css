@@ -572,8 +572,10 @@ TODO: make it draggable;
     border-bottom-color: #848484;
     background: silver;
     padding: 2px;
+    color: #000;
 }
 .modal-header{
+    min-height: 32px;
     height: 32px;
     background: -webkit-linear-gradient(left,#08216b,#a5cef7)!important;
     color:white;
