@@ -24,20 +24,18 @@
                     </div>
                     <div class="form-group row">
                         <div class="col-sm-12">
-                            <button type="submit" class="btn btn-primary" v-b-modal.errMsgModal>Sign in</button>
+                            <button type="submit" class="btn btn-primary">Sign in</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
-
  
         <b-modal id="errMsgModal" 
-            v-if="showModal"
             hide-footer
             title="Dial-Up Error"
             >
-                <template #default="{ hide }">
+                <template #default="{ }">
             <div class="row">
                 <div class="col-4">
                     <img src="assets/icons/msg_warning-0.png" class="mx-auto d-block text-center" height="65" >
@@ -48,14 +46,11 @@
             </div>
             <div class="form-group row">
                 <div class="col-sm-12 text-center">
-                    <b-button class="btn btn-primary w-25" @click="hide()">OK</b-button>
+                    <b-button class="btn btn-primary w-25" @click="closeModal()">OK</b-button>
                 </div>
             </div>
                 </template>
         </b-modal>
-
-
-
 
     </div>
 </template>
@@ -74,7 +69,6 @@ export default ({
 				username: "",
 				password: "",
 			},
-            showModal:false,
 		}
 	},
 	methods: {
@@ -85,16 +79,17 @@ export default ({
 			.then((response)=>{
 				this.setUser(response.data);
 				this.$router.push({name: "Home"});
-                alert("success");
+                alert("Loggin success");
 			})
 			.catch((error)=>{
 				if(error.response){
-                    this.showModal=true;
-                    // this.$refs.modal.classList.toggle("show");
-					// makeToast(this, "Error", "Wrong username or password.", "danger");
+                    this.$bvModal.show("errMsgModal");
 				}
 			});
-		}
+		},
+        closeModal: function(){
+            this.$bvModal.hide("errMsgModal");
+        },
 	}
 })
 </script>
