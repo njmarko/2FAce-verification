@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DataLoader implements ApplicationRunner {
-
     private final IAuthorityRepository authorityRepository;
     private final IUserRepository userRepository;
 
@@ -22,17 +21,18 @@ public class DataLoader implements ApplicationRunner {
     }
     
     @Override
-    public void run(ApplicationArguments args) throws Exception {
-        Authority systemAdminAuthority = createAuthority("ROLE_SYSTEM_ADMIN");
+    public void run(ApplicationArguments args) {
+        var systemAdminAuthority = createAuthority("ROLE_SYSTEM_ADMIN");
+        var userAuthority = createAuthority("ROLE_USER");
 
-        User user1 = new User("pera", "pera", "pera@gmail.com", true, false);
+        var user1 = new User("pera", "pera", "pera@gmail.com", true, false);
         user1.getAuthorities().add(systemAdminAuthority);
         userRepository.save(user1);
 
     }
 
     private Authority createAuthority(String roleName) {
-        Authority authority = new Authority(roleName);
+        var authority = new Authority(roleName);
         authorityRepository.save(authority);
         return authority;
     }

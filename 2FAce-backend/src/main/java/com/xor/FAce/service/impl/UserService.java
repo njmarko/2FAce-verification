@@ -2,6 +2,7 @@ package com.xor.FAce.service.impl;
 
 import com.xor.FAce.domain.entities.User;
 import com.xor.FAce.domain.exceptions.EmailAlreadyExistsException;
+import com.xor.FAce.domain.exceptions.NoAuthorityException;
 import com.xor.FAce.domain.exceptions.UsernameAlreadyExistsException;
 import com.xor.FAce.repository.IUserRepository;
 import com.xor.FAce.service.IUserService;
@@ -36,12 +37,14 @@ public class UserService implements IUserService, UserDetailsService {
         userRepository.findByEmail(user.getEmail()).ifPresent(u -> {
             throw new EmailAlreadyExistsException(u.getEmail());
         });
+        if (user.getAuthorities().isEmpty()) {
+            throw new NoAuthorityException();
+        }
         return userRepository.save(user);
     }
 
 
     @Override
-    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = findByUsernameWithAuthorities(username);
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
