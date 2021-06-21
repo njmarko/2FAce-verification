@@ -7,17 +7,20 @@ import com.xor.FAce.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DataLoader implements ApplicationRunner {
     private final IAuthorityRepository authorityRepository;
     private final IUserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public DataLoader(IAuthorityRepository authorityRepository, IUserRepository userRepository) {
+    public DataLoader(IAuthorityRepository authorityRepository, IUserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.authorityRepository = authorityRepository;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
     
     @Override
@@ -25,10 +28,14 @@ public class DataLoader implements ApplicationRunner {
         var systemAdminAuthority = createAuthority("ROLE_SYSTEM_ADMIN");
         var userAuthority = createAuthority("ROLE_USER");
 
-        var user1 = new User("pera", "pera", "pera@gmail.com", true, false);
+        var user1 = createUser("pera", "pera", "pera@gmail.com");
         user1.getAuthorities().add(systemAdminAuthority);
         userRepository.save(user1);
 
+    }
+
+    private User createUser(String username, String password, String email) {
+        return new User(username, passwordEncoder.encode(password), email, true, false);
     }
 
     private Authority createAuthority(String roleName) {
