@@ -1,5 +1,5 @@
 import axios from "axios";
-import ServiceBase from "./ServiceBase";
+import ServiceBase from "@/service/ServiceBase";
 
 class UserService extends ServiceBase {
 	constructor() {
