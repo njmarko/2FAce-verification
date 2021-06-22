@@ -13,6 +13,7 @@
     "core-js": "^3.6.5",
     "vue": "^2.6.11",
     "vue-router": "^3.5.1",
+    "vue-web-cam": "^1.9.0",
     "vuex": "^3.6.2",
     "vuex-persistedstate": "^4.0.0-beta.3"
   },
