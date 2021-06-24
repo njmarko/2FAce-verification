@@ -2,6 +2,7 @@ package com.xor.FAce.domain.entities;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -11,7 +12,7 @@ import java.util.Set;
 @Table(name = "users")
 @Getter
 @Setter
-public class User extends BaseEntity {
+public class User extends BaseEntity implements UserDetails {
 
     @Column(name = "username", nullable = false, unique = true)
     private String username;
@@ -51,5 +52,25 @@ public class User extends BaseEntity {
         this.setEmail(email);
         this.setVerified(verified);
         this.setLoggedIn(loggedIn);
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.getActive();
     }
 }
