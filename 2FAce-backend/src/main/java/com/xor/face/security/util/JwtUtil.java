@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -17,6 +18,12 @@ import java.util.stream.Collectors;
 
 @Component
 public class JwtUtil {
+
+    @Value("${jwt.header.string}")
+    public String headerString;
+
+    @Value("${jwt.token.prefix}")
+    public String tokenPrefix;
 
     @Value("${jwt.token.validity}")
     public long tokenValidity;
@@ -47,6 +54,14 @@ public class JwtUtil {
                 .getBody();
     }
 
+    public String getToken(HttpServletRequest httpServletRequest) {
+        final String authorizationHeader = httpServletRequest.getHeader(headerString);
+        if (authorizationHeader != null && authorizationHeader.startsWith(tokenPrefix)) {
+            return authorizationHeader.replace(tokenPrefix, "");
+        }
+        return null;
+    }
+
     private Boolean isTokenExpired(String token) {
         final var expiration = extractExpirationDateFromToken(token);
         return expiration.before(new Date());
@@ -66,24 +81,19 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
+    public boolean validateToken(String token, UserDetails userDetails) {
         final var username = extractUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     public UsernamePasswordAuthenticationToken getAuthenticationToken(final String token, final UserDetails userDetails) {
-
         final var jwtParser = Jwts.parser().setSigningKey(signingKey);
-
         final Jws<Claims> claimsJws = jwtParser.parseClaimsJws(token);
-
         final var claims = claimsJws.getBody();
-
         final Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get(authoritiesKey).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
-
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 

@@ -31,21 +31,34 @@ public class UserService implements IUserService, UserDetailsService {
     @Override
     @Transactional
     public User create(User user) {
-        userRepository.findByUsername(user.getUsername()).ifPresent(u -> {
-            throw new UsernameAlreadyExistsException(u.getUsername());
-        });
-        userRepository.findByEmail(user.getEmail()).ifPresent(u -> {
-            throw new EmailAlreadyExistsException(u.getEmail());
-        });
-        if (user.getAuthorities().isEmpty()) {
-            throw new NoAuthorityException();
-        }
+        throwIfUsernameExists(user);
+        throwIfEmailExists(user);
+        throwIfNoAuthorities(user);
         return userRepository.save(user);
     }
-
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return findByUsernameWithAuthorities(username);
+    }
+
+    private void throwIfNoAuthorities(User user) {
+        if (user.getAuthorities().isEmpty()) {
+            throw new NoAuthorityException();
+        }
+    }
+
+    private void throwIfEmailExists(User user) {
+        var userWithSameEmail = userRepository.findByEmail(user.getEmail());
+        if (userWithSameEmail.isPresent()) {
+            throw new EmailAlreadyExistsException(user.getEmail());
+        }
+    }
+
+    private void throwIfUsernameExists(User user) {
+        var userWithSameUsername = userRepository.findByUsername(user.getUsername());
+        if (userWithSameUsername.isPresent()) {
+            throw new UsernameAlreadyExistsException(user.getUsername());
+        }
     }
 }

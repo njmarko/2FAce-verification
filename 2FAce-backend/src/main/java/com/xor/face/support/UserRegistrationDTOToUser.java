@@ -1,7 +1,7 @@
 package com.xor.face.support;
 
 import com.xor.face.domain.entities.User;
-import com.xor.face.dto.UserRegistrationDTO;
+import com.xor.face.dto.request.UserRegistrationDTO;
 import com.xor.face.service.IAuthorityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;

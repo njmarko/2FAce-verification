@@ -1,4 +1,4 @@
-package com.xor.face.dto;
+package com.xor.face.dto.request;
 
 import lombok.Data;
 

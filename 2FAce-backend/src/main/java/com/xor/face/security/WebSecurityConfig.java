@@ -2,6 +2,7 @@ package com.xor.face.security;
 
 
 import com.xor.face.security.filter.JwtRequestFilter;
+import com.xor.face.security.authentication.provider.FaceVerificationAuthenticationProviderFactory;
 import com.xor.face.security.util.RestAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -12,29 +13,27 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    private final UserDetailsService userService;
+    private final FaceVerificationAuthenticationProviderFactory faceVerificationAuthenticationProviderFactory;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final JwtRequestFilter jwtRequestFilter;
 
     @Autowired
-    public WebSecurityConfig(UserDetailsService userService, RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+    public WebSecurityConfig(FaceVerificationAuthenticationProviderFactory faceVerificationAuthenticationProviderFactory, RestAuthenticationEntryPoint restAuthenticationEntryPoint,
                              JwtRequestFilter jwtRequestFilter) {
-        this.userService = userService;
+        this.faceVerificationAuthenticationProviderFactory = faceVerificationAuthenticationProviderFactory;
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
         this.jwtRequestFilter = jwtRequestFilter;
     }
 
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
+    protected void configure(AuthenticationManagerBuilder auth) {
+        var provider = faceVerificationAuthenticationProviderFactory.faceVerificationAuthenticationProvider();
+        auth.authenticationProvider(provider);
     }
 
     @Override
@@ -42,23 +41,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/users/authenticate").permitAll()
+                .antMatchers("/api/users/2fa").permitAll()
                 .antMatchers("/api/users").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtRequestFilter, BasicAuthenticationFilter.class);
     }
 
     @Override
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
     }
 }

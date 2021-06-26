@@ -1,7 +1,7 @@
 package com.xor.face.support;
 
 import com.xor.face.domain.entities.User;
-import com.xor.face.dto.UserDTO;
+import com.xor.face.dto.response.UserDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;

@@ -1,4 +1,4 @@
-package com.xor.face.dto;
+package com.xor.face.dto.request;
 
 import lombok.Data;
 
@@ -12,4 +12,6 @@ public class LoginUserDTO {
 
     @NotBlank(message = "Password can't be blank.")
     private String password;
+
+    private String image = "OVDE IDE BASE64 SLIKA";
 }
