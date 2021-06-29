@@ -8,6 +8,10 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@tensorflow-models/face-landmarks-detection": "0.0.3",
+    "@tensorflow/tfjs-backend-webgl": "^3.7.0",
+    "@tensorflow/tfjs-converter": "^3.7.0",
+    "@tensorflow/tfjs-core": "^3.7.0",
     "axios": "^0.21.1",
     "bootstrap-vue": "^2.21.2",
     "core-js": "^3.6.5",

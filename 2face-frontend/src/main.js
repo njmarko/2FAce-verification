@@ -3,11 +3,14 @@ import App from './App.vue';
 import router from "./router";
 import store from "./store";
 import axios from 'axios';
+import * as tfc from '@tensorflow/tfjs-core';
+import '@tensorflow/tfjs-backend-webgl';
 import {BootstrapVue, IconsPlugin  } from "bootstrap-vue";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin);
+Vue.use(tfc);
 
 // Configure axios to always include JWT when sending a request
 axios.interceptors.request.use(config => {
