@@ -24,12 +24,13 @@ public class FaceVerificationAuthenticationProvider extends DaoAuthenticationPro
     @Override
     public Authentication authenticate(Authentication auth) throws AuthenticationException {
         var authentication = (FaceVerificationAuthenticationToken) auth;
-        String encodedImage = authentication.getImage();
         var user = getUser(authentication);
         Authentication result = super.authenticate(auth);
-        log.warn(encodedImage);
         var verificationResult = faceVerificationProvider.isValid(authentication);
-        log.warn("Flask verification service returned: " + verificationResult.isVerificationSuccessfull());
+        if (verificationResult.isFailure()) {
+            throw new BadCredentialsException("Face verification 2FA was unsuccessful.");
+            // TODO: Offer additional 2FA mechanism such as TOTP
+        }
         return new UsernamePasswordAuthenticationToken(user, result.getCredentials(), result.getAuthorities());
     }
 

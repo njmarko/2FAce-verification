@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 
 venv/
+__pycache__
 
 ### STS ###
 .apt_generated

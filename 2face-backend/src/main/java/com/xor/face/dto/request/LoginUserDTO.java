@@ -13,5 +13,6 @@ public class LoginUserDTO {
     @NotBlank(message = "Password can't be blank.")
     private String password;
 
-    private String image = "OVDE IDE BASE64 SLIKA";
+    @NotBlank(message = "Image can't be blank.")
+    private String image;
 }
