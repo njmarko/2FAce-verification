@@ -32,7 +32,7 @@ user_repository = UserRepository()
 
 def verification_impl(model):
     req_body = request.get_json()
-    print(req_body)
+    # print(req_body)
     verify_credentials_use_case: VerifyCredentials = create_verify_credentials(model, user_repository)
     try:
         verification_result = verify_credentials_use_case(VerifyCredentialsRequest(username=req_body['username'],

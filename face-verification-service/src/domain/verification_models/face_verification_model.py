@@ -26,8 +26,8 @@ def to_numpy_array(image_string: str, expected_shape: tuple):
         image_string = image_string.split(",")[1]
     base64_decoded = base64.b64decode(image_string)
     image = Image.open(io.BytesIO(base64_decoded))
-    image = image.resize(expected_shape)
     # image.show()
+    image = image.resize(expected_shape)
     # we need the image to be of shape (1, *expected_shape, 3)
     arr = np.array(image)[..., :3]  # cut off the fourth dimension which represents transparency
     return np.expand_dims(arr, axis=0)  # add one dimension as the first one

@@ -11,7 +11,7 @@ class FaceNet(FaceVerificationModel):
         label_image = self._model.embeddings(to_numpy_array(user.image.encoded_image, expected_shape=(160, 160)))
         verification_image = self._model.embeddings(to_numpy_array(encoded_image, expected_shape=(160, 160)))
         print(self._model.compute_distance(verification_image, label_image))
-        return True if self._model.compute_distance(verification_image, label_image) < 1.0 else False
+        return True if self._model.compute_distance(verification_image, label_image) < 0.5 else False
 
     def register(self, request):
         return True
