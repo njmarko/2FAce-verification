@@ -1,8 +1,9 @@
 import logging
 from logging.config import dictConfig
-from flask import Flask, request, jsonify
+from flask import Flask, request
 
 from db import create_db, seed_db
+from db.repositories import UserRepository
 from domain.verification_models import FaceNet, VggFace
 from application.verify_credentials import create_verify_credentials, VerifyCredentialsRequest, VerifyCredentials
 
@@ -26,13 +27,19 @@ dictConfig({
     }
 })
 
+user_repository = UserRepository()
+
 
 def verification_impl(model):
     req_body = request.get_json()
     print(req_body)
-    verify_credentials_use_case: VerifyCredentials = create_verify_credentials(model)
-    verification_result = verify_credentials_use_case(VerifyCredentialsRequest(username=req_body['username'],
-                                                                               encoded_image=req_body['image']))
+    verify_credentials_use_case: VerifyCredentials = create_verify_credentials(model, user_repository)
+    try:
+        verification_result = verify_credentials_use_case(VerifyCredentialsRequest(username=req_body['username'],
+                                                                                   encoded_image=req_body['image']))
+    except Exception as e:
+        logging.warning(e)
+        verification_result = False
     return {
         "verificationSuccessful": verification_result
     }
