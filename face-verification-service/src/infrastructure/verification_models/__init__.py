@@ -1,2 +1,3 @@
 from infrastructure.verification_models.face_net import FaceNet
 from infrastructure.verification_models.vgg_face import VggFace
+from infrastructure.verification_models.user_specific_verification_model import UserSpecificVerificationModel

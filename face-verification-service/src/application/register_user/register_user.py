@@ -33,4 +33,5 @@ class RegisterUser(UseCase):
         self._ensure_valid(request)
         user = User(username=request.username,
                     images=[UserImage(encoded_image=image) for image in request.encoded_images])
+        user.verification_model = self._registration_model.register(user)
         return self._user_repository.save(user) is not None

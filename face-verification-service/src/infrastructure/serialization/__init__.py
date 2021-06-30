@@ -1,0 +1,1 @@
+from infrastructure.serialization.pickle_model_serializer import PickleModelEncoder

@@ -4,8 +4,8 @@ from keras_vggface.vggface import VGGFace
 
 class VggFace(FaceVerificationModel):
 
-    def __init__(self, image_to_tensor):
-        super().__init__(image_to_tensor)
+    def __init__(self, image_to_tensor, model_serializer):
+        super().__init__(image_to_tensor, model_serializer)
         self._model = VGGFace(model='resnet50', include_top=False, input_shape=(224, 224, 3), pooling='avg')
 
     def verify(self, encoded_image, user):
@@ -14,5 +14,5 @@ class VggFace(FaceVerificationModel):
         print(x.shape)
         return True
 
-    def register(self, request):
+    def register(self, user):
         return True
