@@ -1,7 +1,6 @@
 from domain.exceptions import InvalidVerificationCredentials
-from application.common import UseCase, Validator
+from application.common import UseCase, Validator, is_base_64
 from dataclasses import dataclass
-import base64
 
 
 @dataclass
@@ -15,21 +14,7 @@ class VerifyCredentialsRequestValidator(Validator):
     def validate(self, request: VerifyCredentialsRequest):
         if request.username is None or request.username.strip() == '':
             raise InvalidVerificationCredentials("Username can't be empty.")
-        self.is_base_64(request.encoded_image)
-
-    @classmethod
-    def is_base_64(cls, s: str):
-        try:
-            base64_str = s
-            if "," in s:
-                tokens = s.split(",")
-                if len(tokens) != 2:
-                    raise InvalidVerificationCredentials("Invalid base64 encoded image..")
-                base64_str = tokens[1]
-            if base64.b64encode(base64.b64decode(base64_str)).decode('ascii') != base64_str:
-                raise InvalidVerificationCredentials("Invalid base64 encoded image.")
-        except Exception:
-            raise InvalidVerificationCredentials("Invalid base64 encoded image.")
+        is_base_64(request.encoded_image)
 
 
 class VerifyCredentials(UseCase):

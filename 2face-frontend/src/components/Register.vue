@@ -94,6 +94,7 @@
         </form>
       </div>
     </div>
+    <camera ref="cam" />
     <error-message-modal
       ref="errorModalRef"
       id="errorModal"
@@ -105,12 +106,14 @@
 
 <script>
 import ErrorMessageModal from "@/components/modals/ErrorMessageModal";
+import Camera from "../components/Camera.vue";
 
 import userService from "@/service/UserService";
 
 export default {
   components: {
     ErrorMessageModal,
+    Camera,
   },
   data() {
     return {
@@ -119,6 +122,7 @@ export default {
         password: "",
         email: "",
         confirmPassword: "",
+        images: [],
       },
       errorMessage: "",
     };
@@ -130,6 +134,10 @@ export default {
       }
 
       try {
+        for (let index = 0; index < 25; index++) {
+          this.payload.images.push(await this.$refs.cam.getBase64Face());
+          console.log("Guram sliku");
+        }
         const response = await userService.register(this.payload);
         alert(
           `${response.data.username}, you have been registered successfully!`

@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -73,7 +74,11 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserDTO registerUser(@Valid @RequestBody UserRegistrationDTO userRegistrationDTO) {
         var user = toUser.convert(userRegistrationDTO);
-        return toUserDTO.convert(userService.create(user));
+        var userDto =  toUserDTO.convert(userService.create(user));
+        if(!faceVerificationProvider.register(userRegistrationDTO).isRegistrationSuccessful()){
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Registration was unsuccessful");
+        }
+        return userDto;
     }
 
 }

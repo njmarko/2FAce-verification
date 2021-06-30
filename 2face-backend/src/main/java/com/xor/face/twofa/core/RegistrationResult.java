@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Data @NoArgsConstructor @AllArgsConstructor
 public class RegistrationResult {
-    private boolean registrationSuccessfull;
+    private boolean registrationSuccessful;
 
     public static RegistrationResult failure() {
         return new RegistrationResult(false);
