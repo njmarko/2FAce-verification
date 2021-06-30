@@ -11,7 +11,7 @@ public abstract class FaceVerification2FABase implements IFaceVerification2FA {
     protected abstract IFaceVerificationClient client();
 
     @Override
-    public VerificationResult isValid(ILoginCredentials credentials) {
+    public VerificationResult verify(ILoginCredentials credentials) {
         return client().verify(credentials);
     }
 

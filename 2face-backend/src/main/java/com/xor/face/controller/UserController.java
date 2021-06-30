@@ -49,7 +49,7 @@ public class UserController {
 
     @GetMapping(value = "/2fa")
     public boolean getCurrent2FAProvider() {
-        var result = faceVerificationProvider.isValid(new LoginCredentials("dusan", "neka slika"));
+        var result = faceVerificationProvider.verify(new LoginCredentials("dusan", "neka slika"));
         return result.isVerificationSuccessful();
     }
 

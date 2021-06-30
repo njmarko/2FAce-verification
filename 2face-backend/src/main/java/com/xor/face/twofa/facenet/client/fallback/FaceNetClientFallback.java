@@ -19,7 +19,7 @@ public class FaceNetClientFallback extends FaceVerificationClientFallbackBase {
 
     @Override
     public RegistrationResult register(IRegistrationCredentials userCredentials) {
-        log.info("vgg face fallback called");
+        log.info("face net fallback called");
         return super.register(userCredentials);
     }
 }

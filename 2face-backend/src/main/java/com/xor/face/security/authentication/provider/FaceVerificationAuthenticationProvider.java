@@ -26,7 +26,7 @@ public class FaceVerificationAuthenticationProvider extends DaoAuthenticationPro
         var authentication = (FaceVerificationAuthenticationToken) auth;
         var user = getUser(authentication);
         Authentication result = super.authenticate(auth);
-        var verificationResult = faceVerificationProvider.isValid(authentication);
+        var verificationResult = faceVerificationProvider.verify(authentication);
         if (verificationResult.isFailure()) {
             throw new BadCredentialsException("Face verification 2FA was unsuccessful.");
             // TODO: Offer additional 2FA mechanism such as TOTP

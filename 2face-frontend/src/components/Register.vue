@@ -139,6 +139,7 @@ export default {
           console.log("Guram sliku");
         }
         const response = await userService.register(this.payload);
+        this.payload.images = [];
         alert(
           `${response.data.username}, you have been registered successfully!`
         );

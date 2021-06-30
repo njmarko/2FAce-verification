@@ -6,6 +6,6 @@ import com.xor.face.twofa.core.credentials.login.ILoginCredentials;
 import com.xor.face.twofa.core.credentials.registration.IRegistrationCredentials;
 
 public interface IFaceVerification2FA {
-    VerificationResult isValid(ILoginCredentials credentials);
+    VerificationResult verify(ILoginCredentials credentials);
     RegistrationResult register(IRegistrationCredentials credentials);
 }
