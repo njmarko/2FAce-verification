@@ -34,12 +34,12 @@ class VerifyCredentialsRequestValidator(Validator):
 
 class VerifyCredentials(UseCase):
 
-    def __init__(self, verification_model, find_one_user, validator):
+    def __init__(self, verification_model, user_repository, validator):
         self._verification_model = verification_model
-        self._find_one_user = find_one_user
+        self._user_repository = user_repository
         self._ensure_valid = validator
 
     def execute(self, request):
         self._ensure_valid(request)
-        user = self._find_one_user(request.username)
+        user = self._user_repository.find_one(request.username)
         return self._verification_model.verify(request.encoded_image, user)

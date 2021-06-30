@@ -1,16 +1,16 @@
-from domain.verification_models import FaceVerificationModel, to_numpy_array
+from application.common import FaceVerificationModel
 from keras_vggface.vggface import VGGFace
-from keras_vggface import utils
 
 
 class VggFace(FaceVerificationModel):
 
-    def __init__(self):
+    def __init__(self, image_to_tensor):
+        super().__init__(image_to_tensor)
         self._model = VGGFace(model='resnet50', include_top=False, input_shape=(224, 224, 3), pooling='avg')
 
     def verify(self, encoded_image, user):
         # TODO: util.preprocessing to center colors across the channels
-        x = self._model.predict(to_numpy_array(encoded_image, expected_shape=(224, 224)))
+        x = self._model.predict(self._image_to_tensor(encoded_image, expected_shape=(224, 224)))
         print(x.shape)
         return True
 

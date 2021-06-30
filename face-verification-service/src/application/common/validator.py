@@ -8,4 +8,4 @@ class Validator(ABC):
         pass
 
     def __call__(self, obj):
-        return self.validate(obj)
+        self.validate(obj)

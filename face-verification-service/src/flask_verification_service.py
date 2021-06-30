@@ -2,9 +2,12 @@ import logging
 from logging.config import dictConfig
 from flask import Flask, request
 
-from db import create_db, seed_db
-from db.repositories import UserRepository
-from domain.verification_models import FaceNet, VggFace
+from infrastructure.persistence import seed_db
+from infrastructure.persistence import create_db
+from infrastructure.persistence.repositories import UserRepository
+from infrastructure.verification_models import FaceNet, VggFace
+from infrastructure.image_processing import PILImageToNumpyArray
+
 from application.verify_credentials import create_verify_credentials, VerifyCredentialsRequest, VerifyCredentials
 
 rest_port = 8181
@@ -47,12 +50,12 @@ def verification_impl(model):
 
 @app.post("/vggface")
 def vgg_face_2fa():
-    return verification_impl(VggFace())
+    return verification_impl(VggFace(PILImageToNumpyArray()))
 
 
 @app.post("/facenet")
 def face_net_2fa():
-    return verification_impl(FaceNet())
+    return verification_impl(FaceNet(PILImageToNumpyArray()))
 
 
 if __name__ == "__main__":
