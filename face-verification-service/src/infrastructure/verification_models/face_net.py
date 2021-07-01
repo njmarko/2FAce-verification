@@ -9,12 +9,16 @@ import tensorflow as tf
 class FaceNet(FaceVerificationModel):
 
     def __init__(self, image_to_tensor, model_serializer):
-        super().__init__(image_to_tensor, model_serializer)
+        super().__init__(image_to_tensor, model_serializer, expected_shape=(160, 160))
         self._model = keras_facenet.FaceNet()
-        self._expected_shape = (160, 160)
+
+    def forward_image_pass(self, image):
+        # keras_facenet implementation of FaceNet already does the sample wise normalization
+        # so we don't need to do it explicitly
+        return self._model.embeddings(image)
 
     def verify(self, encoded_image, user):
-        label_image = self._model.embeddings(self._image_to_tensor(user.images[0].encoded_image, self._expected_shape))
+        label_image = np.frombuffer(user.images[0].image_embeddings, dtype=np.float32).reshape(1, -1)
         verification_image = self._model.embeddings(self._image_to_tensor(encoded_image, self._expected_shape))
         user_model = UserSpecificVerificationModel()
         user_model.build(input_shape=verification_image.shape)
@@ -27,11 +31,12 @@ class FaceNet(FaceVerificationModel):
     def register(self, user):
         correct_images = np.stack([self._image_to_tensor(image.encoded_image, self._expected_shape)
                                    for image in user.images])
-        false_images = np.stack(self.load_false_images(self._expected_shape))
+        false_images = np.stack(self.load_false_images())
         train_y = np.concatenate((np.ones(len(correct_images)), np.zeros(len(false_images))), axis=0).reshape((-1, 1))
-        train_x = np.concatenate((correct_images, false_images), axis=0).reshape((-1, 160, 160, 3))
+        train_x = np.concatenate((correct_images, false_images), axis=0).reshape((-1, *self._expected_shape, 3))
         print(train_x.shape)
         print(train_y.shape)
+        # create a training dataset generator and configure data augmentation
         train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(zoom_range=0.1,
                                                                         width_shift_range=0.1,
                                                                         height_shift_range=0.1,
@@ -42,6 +47,7 @@ class FaceNet(FaceVerificationModel):
                                                                         rescale=1. / 255,
                                                                         samplewise_center=True,
                                                                         samplewise_std_normalization=True)
+        # transfer learning - attach 3 layers to pretrained FaceNet model
         for layer in self._model.model.layers:
             layer.trainable = False
         last_output = self._model.model.get_layer('normalize').output
@@ -54,11 +60,14 @@ class FaceNet(FaceVerificationModel):
                       loss=tf.keras.losses.BinaryCrossentropy(),
                       metrics=[tf.keras.metrics.BinaryAccuracy(),
                                tf.keras.metrics.FalsePositives(),
-                               tf.keras.metrics.TruePositives()])
-        train_generator = train_datagen.flow(train_x, train_y, batch_size=100, shuffle=True)
+                               tf.keras.metrics.FalseNegatives(),
+                               tf.keras.metrics.TruePositives(),
+                               tf.keras.metrics.TrueNegatives()])
+        # train user specific verification model
+        train_generator = train_datagen.flow(train_x, train_y, batch_size=32, shuffle=True)
         train_dataset = tf.data.Dataset.from_generator(lambda: train_generator, (tf.float32, tf.float32))
-        train_dataset.prefetch(tf.data.AUTOTUNE).cache().batch(100)
-        model.fit(train_dataset, epochs=5, steps_per_epoch=2)
+        train_dataset.prefetch(tf.data.AUTOTUNE).cache().batch(32)
+        model.fit(train_dataset, epochs=2, steps_per_epoch=10)
         user_model = UserSpecificVerificationModel()
         user_model.train_model(input_shape=(1, 512), model=model)
         return self._model_serializer.serialize(user_model.get_weights())
