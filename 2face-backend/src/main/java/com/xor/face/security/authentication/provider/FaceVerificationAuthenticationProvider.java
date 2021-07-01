@@ -10,13 +10,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Slf4j
 public class FaceVerificationAuthenticationProvider extends DaoAuthenticationProvider {
-    private final IUserService userService;
+    private final UserDetailsService userService;
     private final IFaceVerification2FA faceVerificationProvider;
 
-    public FaceVerificationAuthenticationProvider(IUserService userService, IFaceVerification2FA faceVerificationProvider) {
+    public FaceVerificationAuthenticationProvider(UserDetailsService userService, IFaceVerification2FA faceVerificationProvider) {
         this.userService = userService;
         this.faceVerificationProvider = faceVerificationProvider;
     }
@@ -39,8 +41,8 @@ public class FaceVerificationAuthenticationProvider extends DaoAuthenticationPro
         return authentication.equals(FaceVerificationAuthenticationToken.class);
     }
 
-    private User getUser(FaceVerificationAuthenticationToken auth) {
-        var user = userService.findByUsernameWithAuthorities(auth.getName());
+    private UserDetails getUser(FaceVerificationAuthenticationToken auth) {
+        var user = userService.loadUserByUsername(auth.getName());
         if (user == null) {
             throw new BadCredentialsException("Invalid username or password");
         }

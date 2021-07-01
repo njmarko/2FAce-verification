@@ -80,6 +80,19 @@
               />
             </div>
           </div>
+          <div class="form-group" v-if="isRegistering">
+            <label
+              >Collecting images: {{ payload.images.length }} /
+              {{ imageCount }}</label
+            >
+            <div class="progress">
+              <div
+                class="progress-bar progress-bar-blocks progress-bar-animated"
+                role="progressbar"
+                v-bind:style="progressBarStyle"
+              ></div>
+            </div>
+          </div>
           <div class="form-group row">
             <div class="col-sm-12">
               <button
@@ -124,7 +137,9 @@ export default {
         confirmPassword: "",
         images: [],
       },
+      isRegistering: false,
       errorMessage: "",
+      imageCount: 25,
     };
   },
   methods: {
@@ -134,12 +149,11 @@ export default {
       }
 
       try {
-        for (let index = 0; index < 25; index++) {
+        this.isRegistering = true;
+        for (let index = 0; index < this.imageCount; index++) {
           this.payload.images.push(await this.$refs.cam.getBase64Face());
-          console.log("Guram sliku");
         }
         const response = await userService.register(this.payload);
-        this.payload.images = [];
         alert(
           `${response.data.username}, you have been registered successfully!`
         );
@@ -150,6 +164,13 @@ export default {
           this.$refs.errorModalRef.showModal();
         }
       }
+      this.payload.images = [];
+      this.isRegistering = false;
+    },
+  },
+  computed: {
+    progressBarStyle: function () {
+      return `width: ${(100 * this.payload.images.length) / this.imageCount}%;`;
     },
   },
 };
