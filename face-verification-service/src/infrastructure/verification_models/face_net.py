@@ -38,6 +38,8 @@ class FaceNet(FaceVerificationModel):
                                                                         shear_range=0.1,
                                                                         rotation_range=20,
                                                                         validation_split=0.2,
+                                                                        brightness_range=[0.2, 1.5],
+                                                                        rescale=1. / 255,
                                                                         samplewise_center=True,
                                                                         samplewise_std_normalization=True)
         for layer in self._model.model.layers:
@@ -50,9 +52,13 @@ class FaceNet(FaceVerificationModel):
         model = tf.keras.Model(self._model.model.input, x)
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01),
                       loss=tf.keras.losses.BinaryCrossentropy(),
-                      metrics=[tf.keras.metrics.BinaryAccuracy(), tf.keras.metrics.FalsePositives(), tf.keras.metrics.TruePositives()])
+                      metrics=[tf.keras.metrics.BinaryAccuracy(),
+                               tf.keras.metrics.FalsePositives(),
+                               tf.keras.metrics.TruePositives()])
         train_generator = train_datagen.flow(train_x, train_y, batch_size=100, shuffle=True)
-        model.fit(train_generator, epochs=5)
+        train_dataset = tf.data.Dataset.from_generator(lambda: train_generator, (tf.float32, tf.float32))
+        train_dataset.prefetch(tf.data.AUTOTUNE).cache().batch(100)
+        model.fit(train_dataset, epochs=5, steps_per_epoch=2)
         user_model = UserSpecificVerificationModel()
         user_model.train_model(input_shape=(1, 512), model=model)
         return self._model_serializer.serialize(user_model.get_weights())
