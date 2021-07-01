@@ -30,17 +30,6 @@
               </option>
             </select>
           </div>
-          <div class="col-md-12">
-            <button type="button" class="btn btn-primary" @click="onCapture">
-              Capture Photo
-            </button>
-            <button type="button" class="btn btn-danger" @click="onStop">
-              Stop Camera
-            </button>
-            <button type="button" class="btn btn-success" @click="onStart">
-              Start Camera
-            </button>
-          </div>
         </div>
       </div>
       <div class="col-md-6">
@@ -81,20 +70,13 @@ export default {
       this.deviceId = id;
     },
     devices: function () {
-      // Once we have a list select the first one
-      const [first, ...tail] = this.devices;
-      tail;
-      if (first) {
-        this.camera = first.deviceId;
-        this.deviceId = first.deviceId;
+      if (this.devices.length >= 1) {
+        this.camera = this.devices[0].deviceId;
+        this.deviceId = this.devices[0].deviceId;
       }
     },
   },
   methods: {
-    async onCapture() {
-      this.img = this.$refs.webcam.capture();
-      await this.detectFace();
-    },
     async onStarted(stream) {
       console.log("On Started Event", stream);
     },
@@ -104,7 +86,7 @@ export default {
     onStop() {
       this.$refs.webcam.stop();
     },
-    onStart() {
+    async onStart() {
       this.$refs.webcam.start();
     },
     onError(error) {
@@ -138,29 +120,57 @@ export default {
       const model = await faceLandmarksDetection.load(
         faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
       );
+
       this.image_from_element = document.getElementById("img");
       var image = new Image();
       image.src = this.img;
 
       const predictions = await model.estimateFaces({
-        //    input:this.$refs.webcam.$el
         input: this.image_from_element,
       });
-
       if (predictions.length > 0) {
-        for (const prediction of predictions) {
-          const keypoints = prediction.boundingBox;
-          const width = keypoints.bottomRight[0] - keypoints.topLeft[0];
-          const height = keypoints.bottomRight[1] - keypoints.topLeft[1];
-          this.img = this.cropImage(
-            this.image_from_element,
-            keypoints.topLeft[0],
-            keypoints.topLeft[1],
-            width,
-            height
-          ).toDataURL("image/jpg", 90);
-        }
+        console.log("DETECTED FACES: ", predictions.length);
+        // Find the image which is the closest to the center
+        const centerPoint = {
+          x: this.$refs.webcam.$el.videoWidth / 2,
+          y: this.$refs.webcam.$el.videoHeight / 2,
+        };
+        let closestPoint = { x: 99999999, y: 99999999 };
+        let closestBoundingBox = {};
+        predictions.forEach((prediction) => {
+          const boundingBox = prediction.boundingBox;
+          const point = {
+            x: (boundingBox.bottomRight[0] + boundingBox.topLeft[0]) / 2,
+            y: (boundingBox.bottomRight[1] + boundingBox.topLeft[1]) / 2,
+          };
+          if (
+            this.euclideanDistance(centerPoint, point) <
+            this.euclideanDistance(centerPoint, closestPoint)
+          ) {
+            closestPoint = point;
+            closestBoundingBox = boundingBox;
+          }
+        });
+        // Crop that image
+        const width =
+          closestBoundingBox.bottomRight[0] - closestBoundingBox.topLeft[0];
+        const height =
+          closestBoundingBox.bottomRight[1] - closestBoundingBox.topLeft[1];
+        this.img = this.cropImage(
+          this.image_from_element,
+          closestBoundingBox.topLeft[0],
+          closestBoundingBox.topLeft[1],
+          width,
+          height
+        ).toDataURL("image/jpg", 90);
+      } else {
+        this.img = null;
       }
+    },
+    euclideanDistance(point1, point2) {
+      return Math.sqrt(
+        Math.pow(point1.x - point2.x, 2) + Math.pow(point1.y - point2.y, 2)
+      );
     },
   },
 };

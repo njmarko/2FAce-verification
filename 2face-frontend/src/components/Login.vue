@@ -19,6 +19,7 @@
                 type="text"
                 class="form-95"
                 id="inputUsername"
+                required
                 v-model="payload.username"
               />
             </div>
@@ -37,6 +38,7 @@
                 type="password"
                 class="form-95"
                 id="inputPassword3"
+                required
                 v-model="payload.password"
               />
             </div>
@@ -45,6 +47,14 @@
             <div class="col-sm-12">
               <button type="submit" class="btn btn-primary">Sign in</button>
             </div>
+          </div>
+          <div style="text-align: center">
+            <p>
+              Don't have an account?
+              <router-link :to="{ name: 'Register' }"
+                >Register here!</router-link
+              >
+            </p>
           </div>
         </form>
       </div>
@@ -78,8 +88,7 @@ export default {
         password: "",
         image: "",
       },
-      errorMessage:
-        "Unable to sign in. Username or password is invalid. Please try again.",
+      errorMessage: "",
     };
   },
   methods: {
@@ -87,15 +96,27 @@ export default {
     async login() {
       try {
         this.payload.image = await this.$refs.cam.getBase64Face();
+        if (!this.payload.image) {
+          this.showErrorModal(
+            "Unable to detect single face on the camera. Make sure your face is the one visible to the camera."
+          );
+          return;
+        }
         const response = await authService.login(this.payload);
         this.setUser(response.data);
         this.$router.push({ name: "Home" });
         alert("Loggin success");
       } catch (error) {
         if (error.response) {
-          this.$refs.errorModalRef.showModal();
+          this.showErrorModal(
+            "Unable to sign in. Username or password is invalid. Please try again."
+          );
         }
       }
+    },
+    showErrorModal(message) {
+      this.errorMessage = message;
+      this.$refs.errorModalRef.showModal();
     },
   },
 };

@@ -104,6 +104,12 @@
               </button>
             </div>
           </div>
+          <div style="text-align: center">
+            <p>
+              Already have an account?
+              <router-link :to="{ name: 'Login' }">Login here!</router-link>
+            </p>
+          </div>
         </form>
       </div>
     </div>
@@ -150,8 +156,15 @@ export default {
 
       try {
         this.isRegistering = true;
-        for (let index = 0; index < this.imageCount; index++) {
-          this.payload.images.push(await this.$refs.cam.getBase64Face());
+        while (this.payload.images.length < this.imageCount) {
+          const takenImage = await this.$refs.cam.getBase64Face();
+          if (takenImage) {
+            this.payload.images.push(takenImage);
+          } else {
+            this.showErrorModal(
+              "Unable to detect single face on the camera. Make sure your face is the one visible to the camera."
+            );
+          }
         }
         const response = await userService.register(this.payload);
         alert(
@@ -160,12 +173,15 @@ export default {
         this.$router.push({ name: "Login" });
       } catch (error) {
         if (error.response) {
-          this.errorMessage = error.response.data.message;
-          this.$refs.errorModalRef.showModal();
+          this.showErrorModal(error.response.data.message);
         }
       }
       this.payload.images = [];
       this.isRegistering = false;
+    },
+    showErrorModal(message) {
+      this.errorMessage = message;
+      this.$refs.errorModalRef.showModal();
     },
   },
   computed: {
