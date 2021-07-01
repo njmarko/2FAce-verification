@@ -1,3 +1,5 @@
+import datetime
+
 import numpy as np
 
 from application.common import FaceVerificationModel
@@ -58,7 +60,12 @@ class FaceNet(FaceVerificationModel):
         train_generator = train_datagen.flow(train_x, train_y, batch_size=100, shuffle=True)
         train_dataset = tf.data.Dataset.from_generator(lambda: train_generator, (tf.float32, tf.float32))
         train_dataset.prefetch(tf.data.AUTOTUNE).cache().batch(100)
-        model.fit(train_dataset, epochs=5, steps_per_epoch=2)
+        log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+        model.fit(train_dataset,
+                  epochs=5,
+                  steps_per_epoch=2,
+                  callbacks=[tensorboard_callback])
         user_model = UserSpecificVerificationModel()
         user_model.train_model(input_shape=(1, 512), model=model)
         return self._model_serializer.serialize(user_model.get_weights())
