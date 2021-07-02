@@ -56,6 +56,6 @@ class FaceNet(KerasVerificationModelBase):
         # create a training dataset generator and configure data augmentation
         train_data_gen = self.get_training_data_generator()
         # train user specific verification model
-        model = self.fit_user_specific_model(train_data_gen, train_x, train_y, batch_size=32,
-                                             shuffle=True, epochs=2, steps_per_epoch=8)
+        model = self.fit_user_specific_model(train_data_gen, train_x, train_y, batch_size=25,
+                                             shuffle=True, epochs=10, steps_per_epoch=2)
         return self.serialize_model(model, input_shape=(1, 512))

@@ -1,3 +1,5 @@
+import time
+
 from application.common import FaceVerificationModel
 from infrastructure.verification_models.user_specific_verification_model import UserSpecificVerificationModel
 from abc import ABC, abstractmethod
@@ -18,7 +20,8 @@ class KerasVerificationModelBase(FaceVerificationModel, ABC):
         print(train_y.shape)
         return train_x, train_y
 
-    def get_training_data_generator(self):
+    @staticmethod
+    def get_training_data_generator():
         return tf.keras.preprocessing.image.ImageDataGenerator(zoom_range=0.1,
                                                                width_shift_range=0.1,
                                                                height_shift_range=0.1,
@@ -30,15 +33,23 @@ class KerasVerificationModelBase(FaceVerificationModel, ABC):
                                                                samplewise_center=True,
                                                                samplewise_std_normalization=True)
 
-    def fit_user_specific_model(self, train_data_gen, train_x, train_y, batch_size=32,
-                                shuffle=True, epochs=2, steps_per_epoch=8):
+    def fit_user_specific_model(self, train_data_gen, train_x, train_y, batch_size=25,
+                                shuffle=True, epochs=8, steps_per_epoch=2):
         model = self.get_transfer_learning_model()
         train_generator = train_data_gen.flow(train_x, train_y, batch_size=batch_size, shuffle=shuffle)
-        train_dataset = tf.data.Dataset.from_generator(lambda: train_generator, (tf.float32, tf.float32))
-        train_dataset.prefetch(tf.data.AUTOTUNE).cache().batch(batch_size)
+        train_dataset = tf.data.Dataset.from_generator(lambda: train_generator,
+                                                       output_types=(tf.float32, tf.float32),
+                                                       )
+        train_dataset.shuffle(len(train_x)).batch(batch_size).prefetch(tf.data.AUTOTUNE).cache()
         log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
-        model.fit(train_dataset, epochs=epochs, steps_per_epoch=steps_per_epoch, callbacks=[tensorboard_callback])
+        cb_early_stop = tf.keras.callbacks.EarlyStopping(monitor='binary_accuracy', mode="max", patience=3)
+        t1 = time.time()
+        model.fit(train_dataset,
+                  epochs=epochs,
+                  steps_per_epoch=steps_per_epoch,
+                  callbacks=[tensorboard_callback, cb_early_stop])
+        print(f"Vreme treniranja {time.time() - t1}")
         return model
 
     def serialize_model(self, model, input_shape):
