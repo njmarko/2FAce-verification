@@ -17,6 +17,6 @@ public interface IVggFaceClient extends IFaceVerificationClient {
     @PostMapping(value = "/vggface")
     VerificationResult verify(@RequestBody ILoginCredentials userCredentials);
 
-    @PostMapping(value = "/register/facenet")
+    @PostMapping(value = "/register/vggface")
     RegistrationResult register(@RequestBody IRegistrationCredentials userCredentials);
 }

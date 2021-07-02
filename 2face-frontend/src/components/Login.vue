@@ -43,6 +43,14 @@
               />
             </div>
           </div>
+          <div class="form-group" v-if="isVerifying">
+            <label>Verifying your face...</label>
+            <div class="text-center">
+              <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+            </div>
+          </div>
           <div class="form-group row">
             <div class="col-sm-12">
               <button type="submit" class="btn btn-primary">Sign in</button>
@@ -88,6 +96,7 @@ export default {
         password: "",
         image: "",
       },
+      isVerifying: false,
       errorMessage: "",
     };
   },
@@ -102,6 +111,7 @@ export default {
           );
           return;
         }
+        this.isVerifying = true;
         const response = await authService.login(this.payload);
         this.setUser(response.data);
         this.$router.push({ name: "Home" });
@@ -113,6 +123,7 @@ export default {
           );
         }
       }
+      this.isVerifying = false;
     },
     showErrorModal(message) {
       this.errorMessage = message;

@@ -94,6 +94,17 @@
               ></div>
             </div>
           </div>
+          <div class="form-group" v-if="isTraining">
+            <label
+              >Your face verification model is training. Please be
+              patient.</label
+            >
+            <div class="text-center">
+              <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+            </div>
+          </div>
           <div class="form-group row">
             <div class="col-sm-12">
               <button
@@ -145,6 +156,7 @@ export default {
         images: [],
       },
       isRegistering: false,
+      isTraining: false,
       errorMessage: "",
       imageCount: 25,
     };
@@ -167,6 +179,8 @@ export default {
             );
           }
         }
+        this.isRegistering = false;
+        this.isTraining = true;
         const response = await userService.register(this.payload);
         alert(
           `${response.data.username}, you have been registered successfully!`
@@ -177,8 +191,8 @@ export default {
           this.showErrorModal(error.response.data.message);
         }
       }
+      this.isTraining = false;
       this.payload.images = [];
-      this.isRegistering = false;
     },
     showErrorModal(message) {
       this.errorMessage = message;

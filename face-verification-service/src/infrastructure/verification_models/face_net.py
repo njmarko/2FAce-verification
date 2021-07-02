@@ -20,7 +20,7 @@ class FaceNet(KerasVerificationModelBase):
 
     def verify(self, encoded_image, user):
         label_image = np.frombuffer(choice(user.images).image_embeddings, dtype=np.float32).reshape(1, -1)
-        verification_image = self._model.embeddings(self._image_to_tensor(encoded_image, self._expected_shape))
+        verification_image = self.forward_image_pass(self._image_to_tensor(encoded_image, self._expected_shape))
         user_model = self.load_user_specific_model(user, input_shape=verification_image.shape)
         model_prediction = user_model.predict(verification_image)
         embedding_distance = self._model.compute_distance(verification_image, label_image)
