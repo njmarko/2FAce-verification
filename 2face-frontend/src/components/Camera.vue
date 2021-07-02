@@ -106,6 +106,28 @@ export default {
       await this.detectFace();
       return this.img;
     },
+    async detectFace() {
+      const model = await faceLandmarksDetection.load(
+        faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
+      );
+
+      const imageFromElement = document.getElementById("img");
+      var image = new Image();
+      image.src = this.img;
+
+      const predictions = await model.estimateFaces({
+        input: imageFromElement,
+      });
+      if (predictions.length > 0) {
+        console.log("DETECTED FACES: ", predictions.length);
+        // Find the image which is the closest to the center
+        const closestBoundBox = this.getClosestFaceBoundingBox(predictions);
+        // Crop that image
+        this.img = this.getFaceCropped(closestBoundBox, imageFromElement);
+      } else {
+        this.img = null;
+      }
+    },
     cropImage(src, sx, sy, width, height) {
       // create empty canvas
       var canvas = document.createElement("canvas");
@@ -116,56 +138,47 @@ export default {
         .drawImage(src, sx, sy, width, height, 0, 0, width, height);
       return canvas;
     },
-    async detectFace() {
-      const model = await faceLandmarksDetection.load(
-        faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
-      );
-
-      this.image_from_element = document.getElementById("img");
-      var image = new Image();
-      image.src = this.img;
-
-      const predictions = await model.estimateFaces({
-        input: this.image_from_element,
+    getFaceCropped(closestBoundingBox, imageFromElement) {
+      const width =
+        closestBoundingBox.bottomRight[0] - closestBoundingBox.topLeft[0];
+      const height =
+        closestBoundingBox.bottomRight[1] - closestBoundingBox.topLeft[1];
+      return this.cropImage(
+        imageFromElement,
+        closestBoundingBox.topLeft[0],
+        closestBoundingBox.topLeft[1],
+        width,
+        height
+      ).toDataURL("image/jpg", 90);
+    },
+    getClosestFaceBoundingBox(predictions) {
+      const centerPoint = {
+        x: this.$refs.webcam.$el.videoWidth / 2,
+        y: this.$refs.webcam.$el.videoHeight / 2,
+      };
+      let closestPoint = { x: 99999999, y: 99999999 };
+      let closestBoundingBox = {};
+      predictions.forEach((prediction) => {
+        const boundingBox = prediction.boundingBox;
+        const point = this.getBoundingBoxCenterPoint(boundingBox);
+        if (this.isCloserToCenter(centerPoint, point, closestPoint)) {
+          closestPoint = point;
+          closestBoundingBox = boundingBox;
+        }
       });
-      if (predictions.length > 0) {
-        console.log("DETECTED FACES: ", predictions.length);
-        // Find the image which is the closest to the center
-        const centerPoint = {
-          x: this.$refs.webcam.$el.videoWidth / 2,
-          y: this.$refs.webcam.$el.videoHeight / 2,
-        };
-        let closestPoint = { x: 99999999, y: 99999999 };
-        let closestBoundingBox = {};
-        predictions.forEach((prediction) => {
-          const boundingBox = prediction.boundingBox;
-          const point = {
-            x: (boundingBox.bottomRight[0] + boundingBox.topLeft[0]) / 2,
-            y: (boundingBox.bottomRight[1] + boundingBox.topLeft[1]) / 2,
-          };
-          if (
-            this.euclideanDistance(centerPoint, point) <
-            this.euclideanDistance(centerPoint, closestPoint)
-          ) {
-            closestPoint = point;
-            closestBoundingBox = boundingBox;
-          }
-        });
-        // Crop that image
-        const width =
-          closestBoundingBox.bottomRight[0] - closestBoundingBox.topLeft[0];
-        const height =
-          closestBoundingBox.bottomRight[1] - closestBoundingBox.topLeft[1];
-        this.img = this.cropImage(
-          this.image_from_element,
-          closestBoundingBox.topLeft[0],
-          closestBoundingBox.topLeft[1],
-          width,
-          height
-        ).toDataURL("image/jpg", 90);
-      } else {
-        this.img = null;
-      }
+      return closestBoundingBox;
+    },
+    isCloserToCenter(centerPoint, point, closestPoint) {
+      return (
+        this.euclideanDistance(centerPoint, point) <
+        this.euclideanDistance(centerPoint, closestPoint)
+      );
+    },
+    getBoundingBoxCenterPoint(boundingBox) {
+      return {
+        x: (boundingBox.bottomRight[0] + boundingBox.topLeft[0]) / 2,
+        y: (boundingBox.bottomRight[1] + boundingBox.topLeft[1]) / 2,
+      };
     },
     euclideanDistance(point1, point2) {
       return Math.sqrt(

@@ -1,14 +1,13 @@
-import datetime
+from infrastructure.verification_models.keras_verification_model_base import KerasVerificationModelBase
 
-import numpy as np
-
-from application.common import FaceVerificationModel
-from infrastructure.verification_models.user_specific_verification_model import UserSpecificVerificationModel
 import keras_facenet
 import tensorflow as tf
+import numpy as np
+
+from random import choice
 
 
-class FaceNet(FaceVerificationModel):
+class FaceNet(KerasVerificationModelBase):
 
     def __init__(self, image_to_tensor, model_serializer):
         super().__init__(image_to_tensor, model_serializer, expected_shape=(160, 160))
@@ -20,35 +19,20 @@ class FaceNet(FaceVerificationModel):
         return self._model.embeddings(image)
 
     def verify(self, encoded_image, user):
-        label_image = np.frombuffer(user.images[0].image_embeddings, dtype=np.float32).reshape(1, -1)
+        label_image = np.frombuffer(choice(user.images).image_embeddings, dtype=np.float32).reshape(1, -1)
         verification_image = self._model.embeddings(self._image_to_tensor(encoded_image, self._expected_shape))
-        user_model = UserSpecificVerificationModel()
-        user_model.build(input_shape=verification_image.shape)
-        user_model.set_weights(self._model_serializer.deserialize(user.verification_model))
-        # TODO: Do the verification
-        print(user_model.predict(verification_image))
-        print(self._model.compute_distance(verification_image, label_image))
-        return True if self._model.compute_distance(verification_image, label_image) < 0.5 else False
+        user_model = self.load_user_specific_model(user, input_shape=verification_image.shape)
+        model_prediction = user_model.predict(verification_image)
+        embedding_distance = self._model.compute_distance(verification_image, label_image)
+        return self.prediction_function(model_prediction, embedding_distance)
 
-    def register(self, user):
-        correct_images = np.stack([self._image_to_tensor(image.encoded_image, self._expected_shape)
-                                   for image in user.images])
-        false_images = np.stack(self.load_false_images())
-        train_y = np.concatenate((np.ones(len(correct_images)), np.zeros(len(false_images))), axis=0).reshape((-1, 1))
-        train_x = np.concatenate((correct_images, false_images), axis=0).reshape((-1, *self._expected_shape, 3))
-        print(train_x.shape)
-        print(train_y.shape)
-        # create a training dataset generator and configure data augmentation
-        train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(zoom_range=0.1,
-                                                                        width_shift_range=0.1,
-                                                                        height_shift_range=0.1,
-                                                                        shear_range=0.1,
-                                                                        rotation_range=20,
-                                                                        validation_split=0.2,
-                                                                        brightness_range=[0.2, 1.5],
-                                                                        rescale=1. / 255,
-                                                                        samplewise_center=True,
-                                                                        samplewise_std_normalization=True)
+    def prediction_function(self, model_prediction, embedding_distance):
+        print(f"User specific model prediction: {model_prediction}")
+        print(f"Embedding distance: {embedding_distance}")
+        print(f"FaceNet final prediction: {(model_prediction - 1.2 * embedding_distance)}")
+        return True if (model_prediction - 1.2 * embedding_distance) >= 0.0 else False
+
+    def get_transfer_learning_model(self):
         # transfer learning - attach 3 layers to pretrained FaceNet model
         for layer in self._model.model.layers:
             layer.trainable = False
@@ -65,16 +49,13 @@ class FaceNet(FaceVerificationModel):
                                tf.keras.metrics.FalseNegatives(),
                                tf.keras.metrics.TruePositives(),
                                tf.keras.metrics.TrueNegatives()])
+        return model
+
+    def register(self, user):
+        train_x, train_y = self.get_train_data(user)
+        # create a training dataset generator and configure data augmentation
+        train_data_gen = self.get_training_data_generator()
         # train user specific verification model
-        train_generator = train_datagen.flow(train_x, train_y, batch_size=32, shuffle=True)
-        train_dataset = tf.data.Dataset.from_generator(lambda: train_generator, (tf.float32, tf.float32))
-        train_dataset.prefetch(tf.data.AUTOTUNE).cache().batch(32)
-        log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
-        model.fit(train_dataset,
-                  epochs=2,
-                  steps_per_epoch=8,
-                  callbacks=[tensorboard_callback])
-        user_model = UserSpecificVerificationModel()
-        user_model.train_model(input_shape=(1, 512), model=model)
-        return self._model_serializer.serialize(user_model.get_weights())
+        model = self.fit_user_specific_model(train_data_gen, train_x, train_y, batch_size=32,
+                                             shuffle=True, epochs=2, steps_per_epoch=8)
+        return self.serialize_model(model, input_shape=(1, 512))

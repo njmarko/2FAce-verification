@@ -83,7 +83,8 @@
           <div class="form-group" v-if="isRegistering">
             <label
               >Collecting images: {{ payload.images.length }} /
-              {{ imageCount }}</label
+              {{ imageCount }} (Make sure your face is the only one visible to
+              the camera)</label
             >
             <div class="progress">
               <div

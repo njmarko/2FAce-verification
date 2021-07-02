@@ -57,8 +57,6 @@ class FaceVerificationModel(VerificationModel, RegistrationModel, ABC):
 
     def precompute_embeddings(self, user):
         for image in user.images:
-            np_emb = self.forward_image_pass(
-                self._image_to_tensor(image.encoded_image, self._expected_shape))
             image.image_embeddings = self.forward_image_pass(
                 self._image_to_tensor(image.encoded_image, self._expected_shape)).tobytes()
 
