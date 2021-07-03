@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @CircuitBreaker(name = "face-net-verification")
-@FeignClient(name = "face-net-verification", qualifiers = "face-net-client", url = "http://localhost:8181", configuration = FaceNetClientConfig.class)
+@FeignClient(value = "face-verification-service", qualifiers = "face-net-client", configuration = FaceNetClientConfig.class)
 public interface IFaceNetClient extends IFaceVerificationClient {
     @PostMapping(value = "/facenet")
     VerificationResult verify(@RequestBody ILoginCredentials userCredentials);

@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @CircuitBreaker(name = "vgg-face-verification")
-@FeignClient(name = "vgg-face-verification", qualifiers = "vgg-face-client", url = "http://localhost:8181/", configuration = VggFaceClientConfig.class)
+// TODO: Ako treba da se pokrene vggface ovo skloniti i dodati u FaceNetClient! Ovo je samo quick fix :D
+@FeignClient(value = "face-verification-service-vggface", qualifiers = "vgg-face-client", configuration = VggFaceClientConfig.class)
 public interface IVggFaceClient extends IFaceVerificationClient {
     @PostMapping(value = "/vggface")
     VerificationResult verify(@RequestBody ILoginCredentials userCredentials);

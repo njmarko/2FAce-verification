@@ -1,6 +1,5 @@
-from mongoengine import EmbeddedDocument, BinaryField, StringField
+class UserImage(object):
 
-
-class UserImage(EmbeddedDocument):
-    encoded_image = StringField(max_length=1000000, required=True)
-    image_embeddings = BinaryField()
+    def __init__(self, encoded_image, image_embeddings=None):
+        self.encoded_image = encoded_image
+        self.image_embeddings = image_embeddings
