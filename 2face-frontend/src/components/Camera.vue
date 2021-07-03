@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" v-if="loaded">
     <div class="row">
       <div class="col-md-6">
         <h2>Current Camera</h2>
@@ -43,10 +43,11 @@
 </template>
 
 <script>
-import * as faceapi from 'face-api.js';
+import axios from "axios";
+import * as faceapi from "face-api.js";
 import { WebCam } from "vue-web-cam";
-const faceLandmarksDetection = require("@tensorflow-models/face-landmarks-detection");
-require("@tensorflow/tfjs-backend-webgl");
+// const faceLandmarksDetection = require("@tensorflow-models/face-landmarks-detection");
+// require("@tensorflow/tfjs-backend-webgl");
 
 export default {
   name: "App",
@@ -59,11 +60,19 @@ export default {
       camera: null,
       deviceId: null,
       devices: [],
+      net: null,
+      loaded: false,
     };
   },
   async mounted() {
-      await faceapi.nets.ssdMobilenetv1.loadFromUri('/models')
-      console.log("Loaded model");
+    const res = await axios.get("latest.weights", {
+      responseType: "arraybuffer",
+    });
+    this.net = new faceapi.TinyYolov2();
+    const weights = new Float32Array(res.data);
+    this.net.load(weights);
+    this.loaded = true;
+    console.log("LOADED WEIGHTS");
   },
   computed: {
     device: function () {
@@ -112,21 +121,14 @@ export default {
       return this.img;
     },
     async detectFace() {
-      const model = await faceLandmarksDetection.load(
-        faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
-      );
-      console.log(model);
+      // const model = await faceLandmarksDetection.load(
+      //   faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
+      // );
+      // console.log(model);
       const imageFromElement = document.getElementById("img");
       var image = new Image();
       image.src = this.img;
-
-      // const predictions = await model.estimateFaces({
-      //   input: imageFromElement,
-      // });
-      // console.log(predictions);
-      await faceapi.nets.ssdMobilenetv1.loadFromUri('/models')
-      console.log("Loaded model");
-      const predictions = await faceapi.detectAllFaces(imageFromElement);
+      const predictions = await this.net.locateFaces(imageFromElement);
       console.log(predictions);
       if (predictions.length > 0) {
         console.log("DETECTED FACES: ", predictions.length);

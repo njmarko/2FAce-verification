@@ -29,8 +29,8 @@ class FaceNet(KerasVerificationModelBase):
     def prediction_function(self, model_prediction, embedding_distance):
         print(f"User specific model prediction: {model_prediction}")
         print(f"Embedding distance: {embedding_distance}")
-        print(f"FaceNet final prediction: {(model_prediction - 1.2 * embedding_distance)}")
-        return True if (model_prediction - 1.2 * embedding_distance) >= 0.0 else False
+        print(f"FaceNet final prediction: {(model_prediction - 2 * embedding_distance)}")
+        return True if (model_prediction - 2 * embedding_distance) >= 0.0 else False
 
     def get_transfer_learning_model(self):
         # transfer learning - attach 3 layers to pretrained FaceNet model
