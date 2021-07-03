@@ -3,9 +3,9 @@ import tensorflow as tf
 
 class UserSpecificVerificationModel(tf.keras.Model):
 
-    def __init__(self):
+    def __init__(self, n_hidden=256):
         super(UserSpecificVerificationModel, self).__init__()
-        self.dense1 = tf.keras.layers.Dense(units=256, activation=tf.nn.tanh, name='D1')
+        self.dense1 = tf.keras.layers.Dense(units=n_hidden, activation=tf.nn.tanh, name='D1')
         self.dense2 = tf.keras.layers.Dense(units=1, activation=tf.nn.sigmoid, name='D2')
 
     def call(self, inputs, training=None, mask=None):

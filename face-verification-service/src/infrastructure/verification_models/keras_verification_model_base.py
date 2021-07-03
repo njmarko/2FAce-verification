@@ -52,13 +52,13 @@ class KerasVerificationModelBase(FaceVerificationModel, ABC):
         print(f"Vreme treniranja {time.time() - t1}")
         return model
 
-    def serialize_model(self, model, input_shape):
-        user_model = UserSpecificVerificationModel()
+    def serialize_model(self, model, input_shape, n_hidden=256):
+        user_model = UserSpecificVerificationModel(n_hidden)
         user_model.train_model(input_shape=input_shape, model=model)
         return self._model_serializer.serialize(user_model.get_weights())
 
-    def load_user_specific_model(self, user, input_shape):
-        user_model = UserSpecificVerificationModel()
+    def load_user_specific_model(self, user, input_shape, n_hidden=256):
+        user_model = UserSpecificVerificationModel(n_hidden)
         user_model.build(input_shape=input_shape)
         user_model.set_weights(self._model_serializer.deserialize(user.verification_model))
         return user_model
