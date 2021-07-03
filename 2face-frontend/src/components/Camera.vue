@@ -43,6 +43,7 @@
 </template>
 
 <script>
+import * as faceapi from 'face-api.js';
 import { WebCam } from "vue-web-cam";
 const faceLandmarksDetection = require("@tensorflow-models/face-landmarks-detection");
 require("@tensorflow/tfjs-backend-webgl");
@@ -59,6 +60,10 @@ export default {
       deviceId: null,
       devices: [],
     };
+  },
+  async mounted() {
+      await faceapi.nets.ssdMobilenetv1.loadFromUri('/models')
+      console.log("Loaded model");
   },
   computed: {
     device: function () {
@@ -110,14 +115,19 @@ export default {
       const model = await faceLandmarksDetection.load(
         faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
       );
-
+      console.log(model);
       const imageFromElement = document.getElementById("img");
       var image = new Image();
       image.src = this.img;
 
-      const predictions = await model.estimateFaces({
-        input: imageFromElement,
-      });
+      // const predictions = await model.estimateFaces({
+      //   input: imageFromElement,
+      // });
+      // console.log(predictions);
+      await faceapi.nets.ssdMobilenetv1.loadFromUri('/models')
+      console.log("Loaded model");
+      const predictions = await faceapi.detectAllFaces(imageFromElement);
+      console.log(predictions);
       if (predictions.length > 0) {
         console.log("DETECTED FACES: ", predictions.length);
         // Find the image which is the closest to the center
@@ -140,13 +150,13 @@ export default {
     },
     getFaceCropped(closestBoundingBox, imageFromElement) {
       const width =
-        closestBoundingBox.bottomRight[0] - closestBoundingBox.topLeft[0];
+        closestBoundingBox.bottomRight.x - closestBoundingBox.topLeft.x;
       const height =
-        closestBoundingBox.bottomRight[1] - closestBoundingBox.topLeft[1];
+        closestBoundingBox.bottomRight.y - closestBoundingBox.topLeft.y;
       return this.cropImage(
         imageFromElement,
-        closestBoundingBox.topLeft[0],
-        closestBoundingBox.topLeft[1],
+        closestBoundingBox.topLeft.x,
+        closestBoundingBox.topLeft.y,
         width,
         height
       ).toDataURL("image/jpg", 90);
@@ -159,7 +169,7 @@ export default {
       let closestPoint = { x: 99999999, y: 99999999 };
       let closestBoundingBox = {};
       predictions.forEach((prediction) => {
-        const boundingBox = prediction.boundingBox;
+        const boundingBox = prediction.box;
         const point = this.getBoundingBoxCenterPoint(boundingBox);
         if (this.isCloserToCenter(centerPoint, point, closestPoint)) {
           closestPoint = point;
@@ -176,8 +186,8 @@ export default {
     },
     getBoundingBoxCenterPoint(boundingBox) {
       return {
-        x: (boundingBox.bottomRight[0] + boundingBox.topLeft[0]) / 2,
-        y: (boundingBox.bottomRight[1] + boundingBox.topLeft[1]) / 2,
+        x: (boundingBox.bottomRight.x + boundingBox.topLeft.x) / 2,
+        y: (boundingBox.bottomRight.y + boundingBox.topLeft.y) / 2,
       };
     },
     euclideanDistance(point1, point2) {
