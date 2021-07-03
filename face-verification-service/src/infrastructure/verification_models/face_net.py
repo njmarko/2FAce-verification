@@ -9,8 +9,8 @@ from random import choice
 
 class FaceNet(KerasVerificationModelBase):
 
-    def __init__(self, image_to_tensor, model_serializer):
-        super().__init__(image_to_tensor, model_serializer, expected_shape=(160, 160))
+    def __init__(self, image_to_tensor, model_serializer, similarity):
+        super().__init__(image_to_tensor, model_serializer, expected_shape=(160, 160), similarity=similarity)
         self._model = keras_facenet.FaceNet()
 
     def forward_image_pass(self, image):
@@ -23,14 +23,14 @@ class FaceNet(KerasVerificationModelBase):
         verification_image = self.forward_image_pass(self._image_to_tensor(encoded_image, self._expected_shape))
         user_model = self.load_user_specific_model(user, input_shape=verification_image.shape)
         model_prediction = user_model.predict(verification_image)
-        embedding_distance = self._model.compute_distance(verification_image, label_image)
+        embedding_distance = self._similarity(label_image, verification_image)
         return self.prediction_function(model_prediction, embedding_distance)
 
     def prediction_function(self, model_prediction, embedding_distance):
         print(f"User specific model prediction: {model_prediction}")
         print(f"Embedding distance: {embedding_distance}")
-        print(f"FaceNet final prediction: {(model_prediction - 1.2 * embedding_distance)}")
-        return True if (model_prediction - 1.2 * embedding_distance) >= 0.0 else False
+        print(f"FaceNet final prediction: {(model_prediction - 2 * embedding_distance)}")
+        return True if (model_prediction - 2 * embedding_distance) >= 0.0 else False
 
     def get_transfer_learning_model(self):
         # transfer learning - attach 3 layers to pretrained FaceNet model

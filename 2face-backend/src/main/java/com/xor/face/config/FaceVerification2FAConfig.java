@@ -12,7 +12,7 @@ public class FaceVerification2FAConfig {
     private final IFaceVerification2FAFactory faceVerification2FAFactory;
 
     @Autowired
-    public FaceVerification2FAConfig(@Qualifier("vgg-face-factory") IFaceVerification2FAFactory faceVerification2FAFactory) {
+    public FaceVerification2FAConfig(@Qualifier("face-net-factory") IFaceVerification2FAFactory faceVerification2FAFactory) {
         this.faceVerification2FAFactory = faceVerification2FAFactory;
     }
 

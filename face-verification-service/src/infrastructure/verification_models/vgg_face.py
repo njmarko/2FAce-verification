@@ -18,8 +18,8 @@ import numpy as np
 
 class VggFace(KerasVerificationModelBase):
 
-    def __init__(self, image_to_tensor, model_serializer):
-        super().__init__(image_to_tensor, model_serializer, expected_shape=(224, 224))
+    def __init__(self, image_to_tensor, model_serializer, similarity):
+        super().__init__(image_to_tensor, model_serializer, expected_shape=(224, 224), similarity=similarity)
         self._model = VGGFace(model='resnet50', include_top=False, input_shape=(224, 224, 3), pooling='avg')
 
     def forward_image_pass(self, image):
@@ -33,7 +33,7 @@ class VggFace(KerasVerificationModelBase):
         model_prediction = user_model.predict(verification_image)
         # print(f"Vgg Model prediciton {model_prediction}")
         # cosine similarity
-        embedding_distance = 1 - np.dot(label_image, verification_image.T) / (np.linalg.norm(label_image) * np.linalg.norm(verification_image))
+        embedding_distance = self._similarity(label_image, verification_image)
         print(f"VggFace predicted: {embedding_distance}")
 
         return True if embedding_distance <= 0.5 else False
@@ -55,7 +55,6 @@ class VggFace(KerasVerificationModelBase):
     def register(self, user):
         train_x, train_y = self.get_train_data(user)
         print(f"Train x shape {train_x.shape}, train y shape {train_y.shape}")
-        true_face = np.frombuffer(choice(user.images).image_embeddings, dtype=np.float32).reshape(1, -1)
         model = self.get_transfer_learning_model()
         train_data_gen = self.get_training_data_generator()
         train_generator = train_data_gen.flow(train_x, train_y, batch_size=25, shuffle=True)

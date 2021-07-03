@@ -10,6 +10,10 @@ import datetime
 
 class KerasVerificationModelBase(FaceVerificationModel, ABC):
 
+    def __init__(self, image_to_tensor, model_serializer, expected_shape, similarity):
+        super().__init__(image_to_tensor, model_serializer, expected_shape)
+        self._similarity = similarity
+
     def get_train_data(self, user):
         correct_images = np.stack([self._image_to_tensor(image.encoded_image, self._expected_shape)
                                    for image in user.images])
