@@ -28,7 +28,7 @@ def get_port():
 
 def run_service():
     port = get_port()
-    eureka_client.init(eureka_server=EUREKA_SERVER, app_name=SERVICE_NAME, instance_port=port)
+    eureka_client.init(eureka_server=EUREKA_SERVER, app_name=SERVICE_NAME, instance_port=port, instance_ip="localhost")
     from waitress import serve
     logging.info("starting flask face verification service")
     start_host()

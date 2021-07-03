@@ -72,7 +72,7 @@ export default {
     const weights = new Float32Array(res.data);
     this.net.load(weights);
     this.loaded = true;
-    console.log("LOADED WEIGHTS");
+    // console.log("LOADED WEIGHTS");
   },
   computed: {
     device: function () {
@@ -129,9 +129,9 @@ export default {
       var image = new Image();
       image.src = this.img;
       const predictions = await this.net.locateFaces(imageFromElement);
-      console.log(predictions);
+      // console.log(predictions);
       if (predictions.length > 0) {
-        console.log("DETECTED FACES: ", predictions.length);
+        // console.log("DETECTED FACES: ", predictions.length);
         // Find the image which is the closest to the center
         const closestBoundBox = this.getClosestFaceBoundingBox(predictions);
         // Crop that image
