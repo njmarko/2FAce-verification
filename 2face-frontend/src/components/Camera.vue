@@ -3,7 +3,6 @@
     <div class="row">
       <div class="col-md-6">
         <h2>Current Camera</h2>
-        <code v-if="device">{{ device.label }}</code>
         <div class="border">
           <vue-web-cam
             ref="webcam"
@@ -35,7 +34,7 @@
       <div class="col-md-6">
         <h2>Captured Image</h2>
         <figure class="figure">
-          <img id="img" :src="img" class="img-responsive" alt="Cropped image" />
+          <img id="img" :src="img" class="img-responsive" />
         </figure>
       </div>
     </div>

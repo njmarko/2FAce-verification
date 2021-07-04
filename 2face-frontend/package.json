@@ -14,6 +14,7 @@
     "@tensorflow/tfjs-core": "^3.7.0",
     "axios": "^0.21.1",
     "bootstrap-vue": "^2.21.2",
+    "clippyjs": "0.0.3",
     "core-js": "^3.6.5",
     "face-api.js": "^0.22.2",
     "vue": "^2.6.11",

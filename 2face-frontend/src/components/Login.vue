@@ -67,7 +67,16 @@
         </form>
       </div>
     </div>
-    <camera ref="cam" />
+
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Cameras</h4>
+      </div>
+      <div class="card-body">
+        <camera ref="cam" />
+      </div>
+    </div>
+
     <error-message-modal
       ref="errorModalRef"
       id="errorModal"
@@ -100,6 +109,13 @@ export default {
       errorMessage: "",
     };
   },
+  mounted(){
+    if(this.$agent){
+        this.$agent.play('Greet');
+        this.$agent.speak("Please my friend, sign in.");
+        this.$agent.play('GetAttention');
+    }
+  },
   methods: {
     ...mapActions(["setUser"]),
     async login() {
@@ -114,10 +130,18 @@ export default {
         this.isVerifying = true;
         const response = await authService.login(this.payload);
         this.setUser(response.data);
+        this.$agent.stopCurrent();
+        this.$agent.speak("Sign in was successfull. Welcome my friend!");
+        this.$agent.play('Congratulate');
+        this.$agent.play('Pleased');
+        this.$agent.play('Wave');
+        this.$agent.play('GetAttention');
         this.$router.push({ name: "Home" });
-        alert("Loggin success");
       } catch (error) {
         if (error.response) {
+          this.$agent.stopCurrent();
+          this.$agent.speak("Sorry my friend. Sign in was unsuccessfull. Try again please.");
+          this.$agent.play('Sad');
           this.showErrorModal(
             "Unable to sign in. Username or password is invalid. Please try again."
           );

@@ -1,11 +1,12 @@
 import Vue from 'vue';
+import clippy from 'clippyjs';
 import App from './App.vue';
 import router from "./router";
 import store from "./store";
 import axios from 'axios';
 import * as tfc from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
-import {BootstrapVue, IconsPlugin  } from "bootstrap-vue";
+import { BootstrapVue, IconsPlugin } from "bootstrap-vue";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 Vue.use(BootstrapVue)
@@ -24,10 +25,10 @@ axios.interceptors.request.use(config => {
 
 // Configure frontend authorization
 router.beforeEach((to, _from, next) => {
-  const {authenticated, authorities} = to.meta;
-  if(store.getters.loggedUser.jwt){
-      next();
-  } else{
+  const { authenticated, authorities } = to.meta;
+  if (store.getters.loggedUser.jwt) {
+    next();
+  } else {
     next();
   }
 
@@ -43,15 +44,24 @@ router.beforeEach((to, _from, next) => {
         next();
       }
     } else {
-      next({name: "Login", query: { redirect: to.fullPath } });
+      next({ name: "Login", query: { redirect: to.fullPath } });
     }
   } else {
     next();
   }
 })
 
-Vue.config.productionTip = false
 
+clippy.load('Bonzi', (agent) => {
+  // do anything with the loaded agent
+  Vue.prototype.$agent = agent;
+  agent.show();
+  agent.play('Wave');
+  agent.speak("Hello my friend. Welcome to our two factor face verification demonstration");
+});
+
+
+Vue.config.productionTip = false
 new Vue({
   router,
   store,

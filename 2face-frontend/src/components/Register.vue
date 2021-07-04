@@ -125,7 +125,16 @@
         </form>
       </div>
     </div>
-    <camera ref="cam" />
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Cameras</h4>
+      </div>
+      <div class="card-body">
+        <camera ref="cam" />
+      </div>
+    </div>
+
+
     <error-message-modal
       ref="errorModalRef"
       id="errorModal"
@@ -161,6 +170,17 @@ export default {
       imageCount: 25,
     };
   },
+  mounted(){
+
+    if(this.$agent){
+        this.$agent.stopCurrent();
+        this.$agent.speak("Hello sir, welcome to registration page.");
+        this.$agent.play('GetAttention');
+        this.$agent.speak("Please fill you registration data and click register button.");
+        this.$agent.play('Searching');
+    }
+
+  },
   methods: {
     async register() {
       if (this.payload.confirmPassword != this.payload.password) {
@@ -168,6 +188,9 @@ export default {
       }
 
       try {
+        this.$agent.stopCurrent();
+        this.$agent.speak("Sir, smile for the camera while it takes pictures");
+        this.$agent.play('GestureUp');
         this.isRegistering = true;
         while (this.payload.images.length < this.imageCount) {
           const takenImage = await this.$refs.cam.getBase64Face();
@@ -181,13 +204,21 @@ export default {
         }
         this.isRegistering = false;
         this.isTraining = true;
+        this.$agent.stopCurrent();
+        this.$agent.speak("Please be patient my friend for the registration to finish.");
+        this.$agent.play('Searching');
+        this.$agent.play('Searching');
+        this.$agent.play('Searching');
         const response = await userService.register(this.payload);
-        alert(
-          `${response.data.username}, you have been registered successfully!`
-        );
+        this.$agent.stopCurrent();
+        this.$agent.speak(`Congratulations my friend, ${response.data.username}. You have registered successfully!`);
+        this.$agent.play('Congratulate');
         this.$router.push({ name: "Login" });
       } catch (error) {
         if (error.response) {
+          this.$agent.stopCurrent();
+          this.$agent.speak("Sorry my friend. Registration was unsuccessfull. Try again please.");
+          this.$agent.play('Sad');
           this.showErrorModal(error.response.data.message);
         }
       }
@@ -197,6 +228,8 @@ export default {
     showErrorModal(message) {
       this.errorMessage = message;
       this.$refs.errorModalRef.showModal();
+
+
     },
   },
   computed: {
